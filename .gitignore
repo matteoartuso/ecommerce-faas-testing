@@ -1,0 +1,3 @@
+Openwhisk/**/*.zip
+Openwhisk/execute_updates.ps1
+Openwhisk/redis_lib.js
