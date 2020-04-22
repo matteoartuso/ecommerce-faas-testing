@@ -1,6 +1,6 @@
 # Stateful FaaS testing
 
-Set of function and test scripts to test two FaaS platform, Openwhisk and OpenFaas. After a setup phase you will be able to tweak and test a simple ecommerce application on two open-source FaaS platform with about their persistence capabilities.
+Set of function and test scripts to test two FaaS platform, Openwhisk and OpenFaas. After a setup phase you will be able to tweak and test a simple ecommerce application on two open-source FaaS platform about their persistence capabilities.
 
 ## Notes
 
