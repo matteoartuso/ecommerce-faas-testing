@@ -1,0 +1,12 @@
+version: 1.0
+provider:
+  name: openfaas
+  gateway: http://192.168.1.18:31112
+functions:
+  add-to-cart:
+    lang: node12
+    handler: ./add-to-cart
+    image: matteoartuso/add-to-cart
+    environment:
+      DB_URL: http://my-couchdb.default:5984
+

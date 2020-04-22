@@ -1,0 +1,7 @@
+{
+    "name": "confirm-payment",
+    "main": "index.js",
+    "dependencies": {
+        "axios": "^0.19.2"
+    }
+}

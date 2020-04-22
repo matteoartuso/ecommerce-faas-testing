@@ -1,0 +1,12 @@
+version: 1.0
+provider:
+  name: openfaas
+  gateway: http://192.168.1.18:31112
+functions:
+  list-products:
+    lang: node12
+    handler: ./list-products
+    image: matteoartuso/list-products
+    environment:
+      DB_URL: http://my-couchdb.default:5984
+

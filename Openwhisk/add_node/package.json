@@ -1,0 +1,7 @@
+{
+    "name": "add-node",
+    "main": "index.js",
+    "dependencies": {
+        "axios": "^0.19.2"
+    }
+}
