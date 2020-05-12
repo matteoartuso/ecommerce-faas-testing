@@ -1,8 +1,9 @@
+const dbprovider = require('./couchdb');
+const ecommerce = require('./ecommerce');
+
 async function confirm_payment(args) {
 
-    const dbprovider = require(args.provider);
-
-    dbprovider.initialize(args.hostIP, args.DBName);
+    dbprovider.initialize(args.hostIP, args.DBName, ecommerce.mergeFunc);
 
     var cart = await dbprovider.getDocument(args.user);
 
@@ -20,7 +21,14 @@ async function confirm_payment(args) {
 
             stored_product.on_hold = stored_product.on_hold - cart_product.quantity;
 
-            response = await dbprovider.addDocument(stored_product);
+            op = {
+                id: args.user + Date.now() + cart_product.id,
+                quantity: cart_product.quantity,
+                op: "purchase"
+            }
+            stored_product.operations.push(op)
+
+            response = await dbprovider.editDocument(cart_product.id, stored_product, false);
         }while(!response.ok)
     }
 
@@ -34,14 +42,14 @@ async function confirm_payment(args) {
         user: args.user
     }
 
-    dbprovider.addDocument(invoice);
+    await dbprovider.addDocument(invoice);
 
     //Resetting cart
     cart.products = [];
     cart.total = 0;
     cart.products_holded = false;
 
-    dbprovider.editDocument(cart);
+    await dbprovider.editDocument(args.user, cart);
 
     return { invoice: invoice };
 }
