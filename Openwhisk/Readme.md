@@ -1,6 +1,4 @@
-# OpenWhisk - CouchDB test repo
-
-This repo is useful to perform testing over a cluster using an OpenFaas system and CouchDB as a persistence support.
+# OpenWhisk
 ## Installation and configuration
 
 Openwhisk configuration steps
@@ -23,13 +21,13 @@ To avoid compatibility problems with the helm version, you need to use kubernete
 The `-p` param associate the cluster to a profile name. In case of parallel work with other clusters it will be easier to differentiate them. I assign 4GB of memory as suggested in the Openwhisk docs
 
 ```
-minikube start --kubernetes-version=1.15.4 - ow --cpus=4 --memory=4096mb
+minikube start --kubernetes-version=1.15.4 -p ow --cpus=4 --memory=4096mb
 ```
 
 After the cluster is available, assign the openwhisk-role to invoker
 
 ```
-minikube kubectl -- label nodes --all openwhisk-role=invoker
+kubectl label nodes --all openwhisk-role=invoker
 ```
 
 Clone the openwhisk-deploy-kube repo
