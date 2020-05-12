@@ -1,12 +1,13 @@
 'use strict'
 
-const dbprovider = require('./couchdb')
+const dbprovider = require('./couchdb');
+const ecommerce = require('./ecommerce');
 
 module.exports = async (event, context) => {
   
   var args = event.body;
 
-  dbprovider.initialize(process.env.DB_URL, "ecommerce")
+  dbprovider.initialize(process.env.DB_URL, "ecommerce", ecommerce.mergeFunc);
 
   var cart = await dbprovider.getDocument(args.user);
 
@@ -17,17 +18,24 @@ module.exports = async (event, context) => {
     });
   }
 
-  var stored_product, response;
+  var stored_product, response, op;
 
   //The payment is completed so we remove every holded product in the cart
   for (var cart_product of cart.products) {
-    do {
-      stored_product = await dbprovider.getDocument(cart_product.id);
+    // do {
+      stored_product = await dbprovider.getDocument(cart_product.id, true);
 
       stored_product.on_hold = stored_product.on_hold - cart_product.quantity;
 
+      op = {
+        id: args.user + Date.now() + cart_product.id,
+        quantity: cart_product.quantity,
+        op: "purchase"
+      }
+      stored_product.operations.push(op)
+
       response = await dbprovider.addDocument(stored_product);
-    } while (!response.ok)
+    // } while (!response.ok)
   }
 
   //At this point the purchase is completed, generate and invoice and return it
@@ -47,7 +55,7 @@ module.exports = async (event, context) => {
   cart.total = 0;
   cart.products_holded = false;
 
-  dbprovider.editDocument(cart);
+  dbprovider.editDocument(args.user, cart);
 
   return context.status(200).succeed({ invoice: invoice });
 }

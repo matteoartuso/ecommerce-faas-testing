@@ -1,19 +1,24 @@
 'use strict'
 
-const dbprovider = require('./couchdb')
+const dbprovider = require('./couchdb');
+const ecommerce = require('./ecommerce');
 
 module.exports = async (event, context) => {
 
   var args = event.body;
 
-  dbprovider.initialize(process.env.DB_URL, "ecommerce")
+  dbprovider.initialize(process.env.DB_URL, "ecommerce", ecommerce.mergeFunc);
 
   var product_id = args.product_id;
   var requested_quantity = args.requested_quantity;
 
-  var product = await dbprovider.getDocument(product_id)
+  if (args.user == null){
+    context.status(200).succeed({ error: 'User not specified'});
+  }
+
+  var product = await dbprovider.getDocument(product_id, false)
     .catch((error) => {
-      context.status(200).succeed({ error: 'Product not found' });
+      context.status(200).succeed({ error: 'Product not found' , detail : error});
     });
 
   if (product.error) {
