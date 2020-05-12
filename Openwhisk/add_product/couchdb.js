@@ -137,6 +137,8 @@ async function getRandomUuid() {
     return axios.get(couchDbHost + '/_uuids').then((response) => response.data.uuids[0]);
 }
 
+exports.getRandomUuid = getRandomUuid;
+
 /**
  * Create a new document with the fields contained in the args argument. if 'args' contains a parameter called '_id'
  * it will be used as identifier, otherwise a new id will be generated.
@@ -167,6 +169,18 @@ async function addDocument(args) {
 }
 
 exports.addDocument = addDocument;
+
+async function bulkUpdate(docs) {
+    if (couchDbHost == null || couchDbDatabase == null) {
+        return { error: 'The function \'initialize\' must be called at the beginning' }
+    }
+
+    return await axios.post(couchDbHost + '/' + couchDbDatabase + '/_bulk_docs', docs)
+        .then((response) => response.data)
+        .catch((error) => error);
+}
+
+exports.bulkUpdate = bulkUpdate;
 
 /**
  * 
@@ -246,7 +260,7 @@ async function getDocument(document_id, resolveConflict = false) {
 
     if (response._conflicts && response._conflicts.length > 0) {
         //Returns the document with the conflicts resolved
-        return mergeFunction(response._conflicts);
+        return mergeFunction(response);
     } else {
         return response;
     }
