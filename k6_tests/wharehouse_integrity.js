@@ -2,10 +2,10 @@ import http from 'k6/http';
 import { check, group, sleep } from 'k6';
 
 //ow0
-// const DATABASE_IP = 'http://192.168.1.15:31324';
+const DATABASE_IP = 'http://192.168.1.25:30007';
 
 //of0
-const DATABASE_IP = 'http://192.168.1.18:31473/';
+// const DATABASE_IP = 'http://192.168.1.18:31473/';
 
 export let options = {
     insecureSkipTLSVerify: true,

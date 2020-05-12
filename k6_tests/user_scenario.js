@@ -1,21 +1,21 @@
 import http from 'k6/http';
 import { check, group, sleep } from 'k6';
 
-// const CLUSTER_0 = 'https://192.168.1.15:31001';
-// const CLUSTER_1 = 'https://192.168.1.21:31001';
+const CLUSTER_0 = 'https://192.168.1.25:31001';
+const CLUSTER_1 = 'https://192.168.1.25:31001';
 
-const CLUSTER_0 = 'http://192.168.1.18:31112';
-const CLUSTER_1 = 'http://192.168.1.19:31112';
+// const CLUSTER_0 = 'http://192.168.1.18:31112';
+// const CLUSTER_1 = 'http://192.168.1.18:31112';
 
-const CHECKOUT_ATTEMPT_LIMIT = 3;
+const CHECKOUT_ATTEMPT_LIMIT = 5;
 
-// const baseUrl = (host, action) => host + '/api/v1/namespaces/guest/actions/' + action + '?blocking=true&result=true';
-const baseUrl = (host, action) => host + '/function/' + action + '.openfaas-fn';
+const baseUrl = (host, action) => host + '/api/v1/namespaces/guest/actions/' + action + '?blocking=true&result=true';
+// const baseUrl = (host, action) => host + '/function/' + action + '.openfaas-fn';
 
 export let options = {
     insecureSkipTLSVerify: true,
-    iterations : 20,
-    vus : 20
+    iterations: 100,
+    vus: 50
     //discardResponseBodies: true
 }
 
@@ -29,12 +29,12 @@ function randomString(length) {
 const params = {
     headers: {
         'Content-Type': 'application/json',
-        // 'Authorization': 'Basic MjNiYzQ2YjEtNzFmNi00ZWQ1LThjNTQtODE2YWE0ZjhjNTAyOjEyM3pPM3haQ0xyTU42djJCS0sxZFhZRnBYbFBrY2NPRnFtMTJDZEFzTWdSVTRWck5aOWx5R1ZDR3VNREdJd1A='
+        'Authorization': 'Basic MjNiYzQ2YjEtNzFmNi00ZWQ1LThjNTQtODE2YWE0ZjhjNTAyOjEyM3pPM3haQ0xyTU42djJCS0sxZFhZRnBYbFBrY2NPRnFtMTJDZEFzTWdSVTRWck5aOWx5R1ZDR3VNREdJd1A='
     },
     //responseType: 'text'
 };
 
-export default function(){
+export default function () {
 
     //--------------------PART 1-----------------------
     //Fetch all products and choose randomly what to buy
@@ -50,20 +50,24 @@ export default function(){
     var res = http.post(baseUrl(CLUSTER_0, 'list-products'), payload, params);
     var stored_products = res.json().products.rows;
 
-    //Choose a random number of products to buy [1,5]
-    var number_of_products = Math.floor(Math.random() * (stored_products.length)) + 1
+    //Choose a random number of products to buy [1,3]
+    // var number_of_products = Math.floor(Math.random() * (stored_products.length)) + 1
+    var number_of_products = Math.floor(Math.random() * 3) + 1
 
     //Select what products to buy and a random quantity
     var products_to_buy = []
 
     var i;
-    for(i=0; i< number_of_products; i++){
+    for (i = 0; i < number_of_products; i++) {
 
         var selected_id = 1 + Math.floor(Math.random() * (stored_products.length))
 
         products_to_buy.push(
-            { product_id : selected_id, 
-                quantity : 1 + Math.floor(Math.random() * (stored_products[selected_id - 1].value.stock / 125))//[1,0,8% of the product stock]
+            {
+                product_id: selected_id,
+                // quantity: 1 + Math.floor(Math.random() * (stored_products[selected_id - 1].value.stock / 125))//[1,0,8% of the product stock]
+                quantity: 1 + Math.floor(Math.random() * 8)//[1,8]
+
             });
     }
 
@@ -76,28 +80,30 @@ export default function(){
 
     var i = 0;
 
-    for(var product of products_to_buy){
+    for (var product of products_to_buy) {
         payload = JSON.stringify({
-            product_id : product.product_id,
-            requested_quantity : product.quantity,
-            user : user
+            product_id: product.product_id,
+            requested_quantity: product.quantity,
+            user: user
         });
 
         //Calling alternatively the two clusters
-        if(i%2 == 0){
+        if (i % 2 == 0) {
             res = http.post(baseUrl(CLUSTER_0, 'add-to-cart'), payload, params);
-        }else{
+            // console.log("Cluster 0: " + res.body);
+        } else {
             res = http.post(baseUrl(CLUSTER_1, 'add-to-cart'), payload, params);
+            // console.log("Cluster 1: " + res.body);
         }
 
         i++;
 
         var res_body = res.json()
 
-        if(res_body.error){
+        if (res_body.error) {
             console.log("Error while loading cart " + user + ": " + JSON.stringify(res_body));
             return;
-        }else{
+        } else {
             // console.log("Added {" + product.product_id + "," + product.quantity + "} to " + user + " cart on cluster " + (i % 2).toString());
             product_added = true;
         }
@@ -113,8 +119,8 @@ export default function(){
     //Proceeds with the checkout of the cart
     // console.log("User " + user + " - Part 3")
 
-    if(product_added){
-        
+    if (product_added) {
+
         payload = JSON.stringify({
             user: user
         })
@@ -122,53 +128,62 @@ export default function(){
         //Loop the checkout process until a critical error occurs or 'i' reaches 'CHECKOUT_ATTEMPT_LIMIT'
         var checkout_error = false;
         var retry = false;
-        i=0;
+        var wait_time, total_wait = 0;
+        i = 0;
 
         do {
-            sleep(3)
             i++;
 
             res = http.post(baseUrl(CLUSTER_0, 'checkout-cart'), payload, params);
 
-            // console.log(user + " checkout body: " + res.body);
+            console.log(user + " checkout body: " + res.body);
 
             res_body = res.json();
 
-            if (res_body.error){
+            if (res_body.error) {
                 checkout_error = true;
-                if (res_body.error.message.includes("RETRY")){
+                console.log("Cart " + user + ": " + JSON.stringify(res_body));
+                if (res_body.error.message.includes("RETRY")) {
                     retry = true;
+
+                    wait_time = Math.floor(Math.random() * (7)) + 2
+                    sleep(wait_time)
+
+                    total_wait += wait_time;
                 }
-                //console.log("Cart " + user + ": " + JSON.stringify(res_body));
-            }else{
+            } else {
                 retry = false;
                 checkout_error = false
             }
-        }while(i < CHECKOUT_ATTEMPT_LIMIT && retry)
+        } while (i < CHECKOUT_ATTEMPT_LIMIT && retry)
 
-        if(checkout_error){
-            console.log("ERROR Cart " + user + ": " + JSON.stringify(res_body));
-            return;
-        }else if(i>1){
-            console.log(user + " correct checkout on attempt " + i.toString())
-        }
+        if (checkout_error) {
+            console.log("ERROR while checkout cart " + user + ": " + JSON.stringify(res_body));
+        } else {
+            if(i>1){
+                console.log(user + " correct checkout on attempt " + i.toString() + " and waited " + total_wait + "s")
+            }
 
-        res = http.post(baseUrl(CLUSTER_0, 'confirm-payment'), payload, params);
+            res = http.post(baseUrl(CLUSTER_0, 'confirm-payment'), payload, params);
 
-        // console.log(user + " payment body: " + res.body);
+            // console.log(user + " payment body: " + res.body);
 
-        res_body = res.json()
+            res_body = res.json()
 
-        if(res_body.error){
-            console.log("Error on payment confirmation of " + user);
+            if (res_body.error) {
+                console.log("Error on payment confirmation of " + user);
+                return;
+            }
+
+            check(res.json(), {
+                'Payment confirmed': (response) => response.invoice.user && response.invoice.user == user
+            })
         }
 
         check(res.json(), {
             'Payment confirmed': (response) => response.invoice.user && response.invoice.user == user
         })
-
-
-    }else{
+    } else {
         console.log("Cart " + user + " not completed")
     }
 }

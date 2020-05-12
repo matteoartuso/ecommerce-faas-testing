@@ -2,10 +2,10 @@ import http from 'k6/http';
 import { check } from 'k6';
 
 //ow0
-// const DATABASE_IP = 'http://192.168.1.15:31324';
+const DATABASE_IP = 'http://192.168.1.25:30007';
 
 //of0
-const DATABASE_IP = 'http://192.168.1.18:31473';
+// const DATABASE_IP = 'http://192.168.1.18:31473';
 
 const products = [
     {
@@ -14,7 +14,14 @@ const products = [
         type:"product",
         stock: 5000,
         price: 1400,
-        on_hold: 0
+        on_hold: 0,
+        operations: [
+            {
+                id: "created",
+                quantity: 5000,
+                op: "created"
+            }
+        ]
     },
     {
         _id: "2",
@@ -22,7 +29,14 @@ const products = [
         type: "product",
         stock: 5000,
         price: 200,
-        on_hold: 0
+        on_hold: 0,
+        operations: [
+            {
+                id: "created",
+                quantity: 5000,
+                op: "created"
+            }
+        ]
     },
     {
         _id: "3",
@@ -30,7 +44,14 @@ const products = [
         type: "product",
         stock: 5000,
         price: 500,
-        on_hold: 0
+        on_hold: 0,
+        operations: [
+            {
+                id: "created",
+                quantity: 5000,
+                op: "created"
+            }
+        ]
     },
     {
         _id: "4",
@@ -38,7 +59,14 @@ const products = [
         type: "product",
         stock: 5000,
         price: 25,
-        on_hold: 0
+        on_hold: 0,
+        operations: [
+            {
+                id: "created",
+                quantity: 5000,
+                op: "created"
+            }
+        ]
     },
     {
         _id: "5",
@@ -46,7 +74,14 @@ const products = [
         type: "product",
         stock: 5000,
         price: 130,
-        on_hold: 0
+        on_hold: 0,
+        operations: [
+            {
+                id: "created",
+                quantity: 5000,
+                op: "created"
+            }
+        ]
     },
     {
         _id: "6",
@@ -54,7 +89,14 @@ const products = [
         type: "product",
         stock: 5000,
         price: 130,
-        on_hold: 0
+        on_hold: 0,
+        operations: [
+            {
+                id: "created",
+                quantity: 5000,
+                op: "created"
+            }
+        ]
     },
     {
         _id: "7",
@@ -62,7 +104,14 @@ const products = [
         type: "product",
         stock: 5000,
         price: 130,
-        on_hold: 0
+        on_hold: 0,
+        operations: [
+            {
+                id: "created",
+                quantity: 5000,
+                op: "created"
+            }
+        ]
     },
     {
         _id: "8",
@@ -70,7 +119,14 @@ const products = [
         type: "product",
         stock: 5000,
         price: 130,
-        on_hold: 0
+        on_hold: 0,
+        operations: [
+            {
+                id: "created",
+                quantity: 5000,
+                op: "created"
+            }
+        ]
     },
     {
         _id: "9",
@@ -78,7 +134,14 @@ const products = [
         type: "product",
         stock: 5000,
         price: 130,
-        on_hold: 0
+        on_hold: 0,
+        operations: [
+            {
+                id: "created",
+                quantity: 5000,
+                op: "created"
+            }
+        ]
     }
 ];
 
