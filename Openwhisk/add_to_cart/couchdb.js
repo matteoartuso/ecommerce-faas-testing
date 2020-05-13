@@ -182,13 +182,10 @@ async function bulkUpdate(docs) {
 
 exports.bulkUpdate = bulkUpdate;
 
-/**
+/**Edit the document with the id in the parameters using the object in 'document'
  * 
- * @param {*} id 
- * @param {*} document 
- * @param {*} retry 
- * @param {*} attempt_limit 
- * @param {function} action - function to execute on the document when retrying 
+ * @param {String} id 
+ * @param {*} document
  */
 async function editDocument(id, document) {
 
@@ -204,11 +201,11 @@ async function editDocument(id, document) {
 
 exports.editDocument = editDocument;
 
-/**
+/**Like editDocument, but does multiple attempt until the document is not correctly updated
  * 
- * @param {*} id 
+ * @param {String} id 
  * @param {Function} action 
- * @param {*} attempt_limit 
+ * @param {Number} attempt_limit 
  */
 async function editWithRetry(id, action, attempt_limit = 0) {
 
@@ -242,7 +239,12 @@ exports.editWithRetry = editWithRetry;
  *  "field2": field2,
  *   ...
  * }
- * @param str document_id
+ * 
+ * If 'resolveConflict' is true and there are conflicts on the document, they will be resolved using the
+ * mergeFunction specified at the initialize step
+ * 
+ * @param {String} document_id
+ * @param {boolean} resolveConflict
  */
 async function getDocument(document_id, resolveConflict = false) {
 
@@ -268,7 +270,7 @@ async function getDocument(document_id, resolveConflict = false) {
 
 exports.getDocument = getDocument;
 
-/**
+/**Gets a View altready present on the database
  * 
  * @param {string} designId 
  */
