@@ -7,8 +7,6 @@ There are differences between this procedure and the one reported on the officia
 
 Here i report the step i followed to install Openwhisk.
 
-O.S. Windows 10 Education Version 10.0.18363
-
 I use a single-node cluster with minikube v 1.9.0 and helm v3.1.2
 
 ```
