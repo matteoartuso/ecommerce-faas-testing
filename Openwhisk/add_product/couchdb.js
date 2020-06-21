@@ -137,6 +137,8 @@ async function getRandomUuid() {
     return axios.get(couchDbHost + '/_uuids').then((response) => response.data.uuids[0]);
 }
 
+exports.getRandomUuid = getRandomUuid;
+
 /**
  * Create a new document with the fields contained in the args argument. if 'args' contains a parameter called '_id'
  * it will be used as identifier, otherwise a new id will be generated.
@@ -168,13 +170,22 @@ async function addDocument(args) {
 
 exports.addDocument = addDocument;
 
-/**
+async function bulkUpdate(docs) {
+    if (couchDbHost == null || couchDbDatabase == null) {
+        return { error: 'The function \'initialize\' must be called at the beginning' }
+    }
+
+    return await axios.post(couchDbHost + '/' + couchDbDatabase + '/_bulk_docs', docs)
+        .then((response) => response.data)
+        .catch((error) => error);
+}
+
+exports.bulkUpdate = bulkUpdate;
+
+/**Edit the document with the id in the parameters using the object in 'document'
  * 
- * @param {*} id 
- * @param {*} document 
- * @param {*} retry 
- * @param {*} attempt_limit 
- * @param {function} action - function to execute on the document when retrying 
+ * @param {String} id 
+ * @param {*} document
  */
 async function editDocument(id, document) {
 
@@ -190,11 +201,11 @@ async function editDocument(id, document) {
 
 exports.editDocument = editDocument;
 
-/**
+/**Like editDocument, but does multiple attempt until the document is not correctly updated
  * 
- * @param {*} id 
+ * @param {String} id 
  * @param {Function} action 
- * @param {*} attempt_limit 
+ * @param {Number} attempt_limit 
  */
 async function editWithRetry(id, action, attempt_limit = 0) {
 
@@ -228,7 +239,12 @@ exports.editWithRetry = editWithRetry;
  *  "field2": field2,
  *   ...
  * }
- * @param str document_id
+ * 
+ * If 'resolveConflict' is true and there are conflicts on the document, they will be resolved using the
+ * mergeFunction specified at the initialize step
+ * 
+ * @param {String} document_id
+ * @param {boolean} resolveConflict
  */
 async function getDocument(document_id, resolveConflict = false) {
 
@@ -246,7 +262,7 @@ async function getDocument(document_id, resolveConflict = false) {
 
     if (response._conflicts && response._conflicts.length > 0) {
         //Returns the document with the conflicts resolved
-        return mergeFunction(response._conflicts);
+        return mergeFunction(response);
     } else {
         return response;
     }
@@ -254,7 +270,7 @@ async function getDocument(document_id, resolveConflict = false) {
 
 exports.getDocument = getDocument;
 
-/**
+/**Gets a View altready present on the database
  * 
  * @param {string} designId 
  */

@@ -1,12 +1,9 @@
-/**
- * 
- * @param {product_id, requested_quantity, user} args 
- */
+const dbprovider = require('./couchdb');
+const ecommerce = require('./ecommerce');
+
 async function add_to_cart(args) {
 
-    const dbprovider = require(args.provider)
-
-    dbprovider.initialize(args.hostIP, args.DBName)
+    dbprovider.initialize(args.hostIP, args.DBName, ecommerce.mergeFunc);
 
     var product_id = args.product_id;
     var requested_quantity = args.requested_quantity;
