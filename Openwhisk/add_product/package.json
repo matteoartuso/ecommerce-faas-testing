@@ -3,6 +3,6 @@
     "main": "index.js",
     "dependencies": {
         "axios": "^0.19.2",
-        "redis": "^3.0.2"
+        "redis": "^3.1.1"
     }
 }
